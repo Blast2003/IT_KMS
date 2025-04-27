@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
       "dnsnetworks.com",
       "img-c.udemycdn.com",
       "repository-images.githubusercontent.com",
-      "www.springboard.com"
+      "www.springboard.com",
     ],
   },
 };

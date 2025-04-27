@@ -70,9 +70,6 @@ export default function CoursePage({ params }: Params) {
       {/* Preview + Enroll */}
       <div className="max-w-6xl w-full mx-auto px-6 mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div>
-          <p className="text-center text-sm text-gray-500 mb-2">
-            ${course.price.toFixed(2)}
-          </p>
           <div className="relative rounded-lg overflow-hidden shadow-lg cursor-pointer group transition-all duration-200">
             <Image
               src={course.imgUrl}

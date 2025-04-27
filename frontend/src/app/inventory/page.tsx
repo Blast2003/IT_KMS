@@ -9,16 +9,16 @@ import {
   FaChevronRight,
   FaPalette,
   FaCog,
+  FaTimes,
 } from "react-icons/fa";
 import { userRegisteredCourses } from "../../data/userRegisteredCourse";
 import { learners } from "../../data/users";
 
 export default function LearningInventoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [modalSource, setModalSource] = useState<string | null>(null);
   const itemsPerPage = 6;
-  const totalPages = Math.ceil(
-    userRegisteredCourses.length / itemsPerPage
-  );
+  const totalPages = Math.ceil(userRegisteredCourses.length / itemsPerPage);
 
   const displayedCourses = userRegisteredCourses.slice(
     (currentPage - 1) * itemsPerPage,
@@ -31,6 +31,10 @@ export default function LearningInventoryPage() {
   ).length;
 
   const currentLearner = learners[0];
+
+  const closeModal = () => {
+    setModalSource(null);
+  };
 
   return (
     <div className="bg-gradient-to-br from-[#CED4DA] to-[#e3ecee] text-[#1f2937] min-h-screen flex items-center justify-center p-6">
@@ -88,65 +92,61 @@ export default function LearningInventoryPage() {
                 Overview of your enrolled courses
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-[900px]">
-              {displayedCourses.map((course) => {
-                  const widthPercent =
-                    course.progress === "Completed"
-                      ? "100%"
-                      : course.progress === "In Progress"
-                      ? "50%"
-                      : "0%";
-
+                {displayedCourses.map((course) => {
+                  const formattedDate = new Date(course.createdAt).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  });
                   return (
                     <article
                       key={course.courseTitle}
-                      className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform transition-transform duration-200 hover:scale-105 hover:animate-pulse"
-                      onClick={() => window.open(course.courseUrl, '_blank')}
+                      className="group bg-white rounded-xl shadow-md overflow-hidden cursor-pointer transform transition-transform duration-200 hover:scale-105"
                     >
-                      <div className="relative">
-                        <Image
-                          src={course.imgUrl}
-                          alt={course.courseTitle}
-                          width={320}
-                          height={120}
-                          className="w-full h-[120px] object-cover"
-                        />
-                        <button
-                          aria-label={`Play video ${course.courseTitle}`}
-                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-80 rounded-full p-2"
-                        >
-                          <FaPlay className="text-gray-900" />
-                        </button>
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold text-sm text-gray-900 mb-2">
+                      <div className="p-6 rounded-xl relative">
+                        {/* Thumbnail */}
+                        <div className="relative rounded-md=-md overflow-hidden mb-4">
+                          <Image
+                            src={course.imgUrl}
+                            alt={course.courseTitle}
+                            width={280}
+                            height={140}
+                            className="w-full h-[140px] object-cover transition-transform duration-300 group-hover:scale-110"
+                          />
+                          {/* Hover-Overlay with Play Button */}
+                          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setModalSource(course.courseUrl);
+                              }}
+                              aria-label={`Play video ${course.courseTitle}`}
+                              className="bg-white bg-opacity-90 rounded-full p-3 hover:bg-opacity-100"
+                            >
+                              <FaPlay className="text-gray-900 text-xl cursor-pointer" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Title */}
+                        <h3 className="text-lg font-semibold text-gray-800 mb-2">
                           {course.courseTitle}
                         </h3>
-                        <div className="h-2 w-full bg-gray-300 rounded-full mb-4">
-                          <div
-                            className="h-2 bg-blue-600 rounded-full"
-                            style={{ width: widthPercent }}
-                          />
-                        </div>
-                        <div className="flex gap-3">
-                          {course.progress === "Completed" ? (
-                            <button className="bg-gray-300 text-gray-600 text-xs px-4 py-1 rounded-full cursor-pointer">
-                              Review
-                            </button>
-                          ) : (
-                            <button className="bg-blue-600 text-white text-xs px-4 py-1 rounded-full cursor-pointer">
-                              Continue
-                            </button>
-                          )}
-                          <span
-                            className={`text-xs rounded-full px-3 py-1 ${
-                              course.progress === "Completed"
-                                ? "text-green-600 bg-green-100"
-                                : "text-blue-500 bg-blue-100"
-                            } cursor-pointer`}
-                          >
-                            {course.progress}
-                          </span>
-                        </div>
+
+                        {/* Short description */}
+                        <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                          {course.summary}
+                        </p>
+
+                        {/* Rating */}
+                        <p className="text-yellow-500 font-medium">
+                          ⭐ {course.rating}
+                        </p>
+
+                        {/* Created date */}
+                        <p className="text-xs text-gray-400 mt-1">
+                          Created on: {formattedDate}
+                        </p>
                       </div>
                     </article>
                   );
@@ -192,6 +192,30 @@ export default function LearningInventoryPage() {
           </main>
         </div>
       </div>
+
+      {/* Modal for YouTube Video */}
+      {modalSource && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-4 relative w-[900px] h-[600px]">
+            <button
+              onClick={closeModal}
+              aria-label="Close video modal"
+              className="absolute top-2 right-0 text-gray-600 hover:text-gray-900 cursor-pointer"
+            >
+              <FaTimes className="text-xl" />
+            </button>
+            <iframe
+              width="100%"
+              height="100%"
+              src={modalSource.replace("watch?v=", "embed/")}
+              title={displayedCourses.find((c) => c.courseUrl === modalSource)?.courseTitle}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
